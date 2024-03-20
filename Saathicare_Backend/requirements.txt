@@ -3,3 +3,6 @@ google-auth-oauthlib
 google-cloud-aiplatform
 flask
 flask-cors
+mistralai
+neo4j
+transformers
