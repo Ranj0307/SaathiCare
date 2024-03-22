@@ -101,7 +101,7 @@ const MainContent = () => {
 
   const fetchContext = async (userResponses) => {
     try {
-      const response = await fetch('http://192.168.29.30:8090/process_responses', {
+      const response = await fetch('http://34.29.182.251:8090/process_responses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_responses: userResponses }),
@@ -127,7 +127,7 @@ const MainContent = () => {
     }
     let prompt = await generatePromptForTag(tag, currentTagIndex, shuffledTags, apiStates, stateMappings, userStateMappings, context);
     try {
-      const response = await fetch('http://192.168.29.30:8080/predict', {
+      const response = await fetch('http://34.29.182.251:8080/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: prompt, tag: tag, context: context}),
