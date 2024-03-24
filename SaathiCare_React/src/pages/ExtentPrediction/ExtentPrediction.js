@@ -7,6 +7,7 @@ const ExtentPrediction = () => {
   const [selectedState, setSelectedState] = useState('Odisha');
   const [stateData, setStateData] = useState([]);
   const [selectedCity, setSelectedCity] = useState('');
+  // eslint-disable-next-line
   const [cityData, setCityData] = useState([]);
   const [diseaseData, setDiseaseData] = useState([]);
   const [projectedCases, setProjectedCases] = useState([]);
@@ -61,7 +62,7 @@ const ExtentPrediction = () => {
   const handleStateChange = (event) => {
     setSelectedState(event.target.value);
   };
-
+// eslint-disable-next-line
   const handleCityChange = (event) => {
     setSelectedCity(event.target.value);
   };
