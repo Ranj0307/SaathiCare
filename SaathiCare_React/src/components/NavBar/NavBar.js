@@ -39,14 +39,14 @@ function NavBar() {
           Care Saathi ChatBot
         </NavLink>
         <NavLink to="/optimize-lab-report" className="nav-item" onClick={closeDropdown}>
-          Optimize Lab Report
+          Summarize Lab Report
         </NavLink>
         <div className="nav-item dropdown" onClick={toggleDropdown} onMouseEnter={openDropdown} onMouseLeave={closeDropdown}>
           Strategic Healthcare Analytics <FaCaretDown className="dropdown-icon"/>
           {isDropdownOpen && (
             <div className="dropdown-content">
               <NavLink to="/image-analytics" className="dropdown-item" onClick={closeDropdown}>Image Analytics</NavLink>
-              <NavLink to="/extent-prediction" className="dropdown-item" onClick={closeDropdown}>Extend Prediction and Preventive Planning</NavLink>
+              <NavLink to="/extent-prediction" className="dropdown-item" onClick={closeDropdown}>Extent Prediction and Preventive Planning</NavLink>
             </div>
           )}
         </div>
