@@ -91,7 +91,6 @@ const transformDataForGroupedBarChart = (data, column) => {
 
   return (
     <div className="ExtentPrediction">
-      <h1>Extend Prediction Page</h1>
       <h2>Preview of CureBay Data</h2>
       <div className="table-container">
         <table>
