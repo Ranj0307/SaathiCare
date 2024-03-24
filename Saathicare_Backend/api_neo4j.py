@@ -8,9 +8,13 @@ from transformers import pipeline
 from flask_cors import CORS
 
 
-uri = "bolt://localhost:7687"
+# uri = "bolt://localhost:7687"
+uri = "neo4j+s://8597dfaf.databases.neo4j.io"
 username = "neo4j"
-password = "Ap@1234567"
+password = "zbwgNCorNrFGTejO96RAuZS4gmTDSRKAUq-74Cpklw4"
+
+
+
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
 classifier = pipeline("zero-shot-classification")
