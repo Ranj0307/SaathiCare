@@ -156,7 +156,7 @@ const blobToFile = (blob, fileName) => {
           <FaUpload />
           <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageChange} />
         </label>
-        <FaCamera className="icon camera-icon" onClick={startCamera} />
+        // <FaCamera className="icon camera-icon" onClick={startCamera} />
         <div className={`preview-box ${selectedImage ? '' : 'disabled'}`}>
           {selectedImage && (
             <>
