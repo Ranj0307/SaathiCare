@@ -12,9 +12,12 @@ RUN pip install -r requirements.txt
 # Copy only the necessary files for the api_model.py Flask app
 COPY api_model.py .
 COPY best_diabetic_retinopathy_model.h5 . 
+COPY cert.pem .
+COPY key.pem .
+
 
 # Expose the port the app runs on
 EXPOSE 9080
 
 # Run the Flask app
-CMD [ "bash", "-c", "export FLASK_APP=api_model.py && flask run --host=0.0.0.0 --port=9080" ]
+CMD [ "bash", "-c", "export FLASK_APP=api_model.py && flask run --host=0.0.0.0 --port=9080 --cert=cert.pem --key=key.pem" ]
