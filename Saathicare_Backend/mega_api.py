@@ -33,7 +33,8 @@ app = Flask(__name__)
 CORS(app)
 
 
-
+from flask_sslify import SSLify
+sslify = SSLify(app)
 
 
 with open('api_keys.json') as api_file:
@@ -449,4 +450,4 @@ def process_responses():
     return jsonify({'response': response})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=9070)
+    app.run(host='0.0.0.0', debug=True, port=9070, ssl_context=('/home/curebay/SaathiCare/SaathiCare_React/cert.pem', '/home/curebay/SaathiCare/SaathiCare_React/key.pem'))
