@@ -18,7 +18,7 @@ const ExtentPrediction = () => {
   const rowsPerPage = 10;
 
   useEffect(() => {
-    fetch('http://34.29.182.251:9090/load_data')
+    fetch('https://34.100.242.45:9070/load_data')
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -47,7 +47,7 @@ const ExtentPrediction = () => {
   }, [data]);
 
   useEffect(() => {
-    fetch('http://34.29.182.251:9090/projected_cases', {
+    fetch('https://34.100.242.45:9070/projected_cases', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
