@@ -104,7 +104,7 @@ const MainContent = () => {
       setIsLoading(false);
       setInputDisabled(true);
       setIsListening(false); 
-      const response = await fetch('http://34.29.182.251:8090/process_responses', {
+      const response = await fetch('https://34.100.242.45:9070/process_responses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_responses: userResponses }),
@@ -118,7 +118,7 @@ const MainContent = () => {
 
   const fetchClinicSuggestions = async (userAddress) => {
     try {
-      const response = await fetch('http://34.29.182.251:9070/nearest_clinic', {
+      const response = await fetch('https://34.100.242.45:9070/nearest_clinic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address: userAddress }),
@@ -142,7 +142,7 @@ const MainContent = () => {
       context = await fetchContext(userResponses);
       let prompt = await generatePromptForTag(userName, tag, currentTagIndex, shuffledTags, apiStates, stateMappings, userStateMappings, context);
       try {
-        const response = await fetch('http://34.29.182.251:8080/predict', {
+        const response = await fetch('https://34.100.242.45:9070/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question: prompt, tag: tag, context: context}),
@@ -161,7 +161,7 @@ const MainContent = () => {
     else{
       let prompt = await generatePromptForTag(userName,tag, currentTagIndex, shuffledTags, apiStates, stateMappings, userStateMappings, context);
       try {
-        const response = await fetch('http://34.29.182.251:8080/predict', {
+        const response = await fetch('https://34.100.242.45:9070/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question: prompt, tag: tag, context: context}),
