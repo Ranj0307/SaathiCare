@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { FaRobot, FaUser, FaPlay, FaMicrophone, FaPaperPlane, FaHourglassHalf } from 'react-icons/fa';
+import hark from 'hark';
 import './MainContent.css';
 
 const MainContent = () => {
@@ -10,10 +11,13 @@ const MainContent = () => {
   const [shuffledTags, setShuffledTags] = useState([]);
   const [isListening, setIsListening] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const speechRecognition = useRef(null);
+  const [language, setLanguage] = useState('en-US');
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const [translatedInput, setTranslatedInput] = useState('');
+  const [lastInputMethod, setLastInputMethod] = useState('typing');
   const inputRef = useRef(null);
   const [inputDisabled, setInputDisabled] = useState(false);
-
   const [userName, setUserName] = useState('');
   const [userAge, setUserAge] = useState('');
   const [userGender, setUserGender] = useState('');
@@ -26,6 +30,16 @@ const MainContent = () => {
 
   const initialTags = ['symptom', 'lifestyle', 'genetic'];
 
+  const simplifyLanguageCode = (languageCode) => {
+    const languageMap = {
+      'en-US': 'en',
+      'es-ES': 'es',
+      'or-IN': 'or',
+      'hi-IN': 'hi'
+    };
+    return languageMap[languageCode] || languageCode.split('-')[0];
+  };  
+
   useEffect(() => {
     if (chatStarted && !collectingUserInfo && currentTagIndex >= 0 && shuffledTags.length > currentTagIndex) {
         handleApiCall(shuffledTags[currentTagIndex]);
@@ -33,43 +47,117 @@ const MainContent = () => {
     // eslint-disable-next-line
   }, [chatStarted, collectingUserInfo, shuffledTags, currentTagIndex]);
 
-  const lazyInitSpeechRecognition = useCallback(() => {
-    if (speechRecognition.current !== null) return;
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.lang = 'en-US';
-      recognition.interimResults = false;
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setUserInput(transcript);
-      };
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-      speechRecognition.current = recognition;
+  const translateText = async (text, languageCode) => {
+    if (!text || !languageCode) {
+      console.error("Missing text or language for translation:", { text, languageCode });
+      return text;
+    }
+    const simpleLanguageCode = simplifyLanguageCode(languageCode);
+    try {
+      const response = await fetch('https://34.29.182.251:8090/translate_to_language', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text, target_language: simpleLanguageCode })
+      });
+      const data = await response.json();
+      if (data.error) {
+        console.error('Translation API error:', data.error);
+        return text;
+      }
+      return data.translatedText;
+    } catch (error) {
+      console.error('Translation error:', error);
+      return text; 
+    }
+  };  
+
+  const handleBotMessage = async (message) => {
+    setIsLoading(true);
+    const translatedMessage = await translateText(message, language);
+    setChatMessages((prevMessages) => [...prevMessages, { type: 'bot', text: translatedMessage }]);
+    setIsLoading(false);
+  };
+
+  const stopisListening = useCallback(() => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setIsListening(false);
     }
   }, []);
 
-  useEffect(() => {
-    lazyInitSpeechRecognition();
-  }, [lazyInitSpeechRecognition]);
+  const startisListening = useCallback(() => {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        const speechEvents = hark(stream, {});
+
+        speechEvents.on('speaking', () => {
+          console.log('speaking');
+        });
+
+        let silenceTimer = null;
+        speechEvents.on('stopped_speaking', () => {
+          if (silenceTimer) clearTimeout(silenceTimer);
+          silenceTimer = setTimeout(() => {
+            console.log('Silence for 5 seconds, stopping recording');
+            stopisListening();
+            speechEvents.stop();
+          }, 3000);
+        });
+
+        mediaRecorderRef.current = new MediaRecorder(stream);
+        audioChunksRef.current = [];
+
+        mediaRecorderRef.current.addEventListener("dataavailable", (event) => {
+          audioChunksRef.current.push(event.data);
+        });
+
+        mediaRecorderRef.current.addEventListener("stop", async () => {
+          if (audioChunksRef.current && audioChunksRef.current.length > 0) {
+            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            const formData = new FormData();
+            formData.append("audio", audioBlob);
+            formData.append("language", language);
+
+            try {
+              const response = await fetch('https://34.29.182.251:8090/speech_to_text', {
+                method: 'POST',
+                body: formData,
+              });
+              const data = await response.json();
+              if (data.transcribedText && data.translatedText) {
+                setUserInput(data.transcribedText);
+                setTranslatedInput(data.translatedText.replace(/[.|]\s*/g, ''));
+                setLastInputMethod('speech'); 
+              } else {
+                console.error('No transcription available:', data);
+              }
+            } catch (error) {
+              console.error('Error:', error);
+            }
+          } else {
+            console.log('No audio data available to send.');
+          }
+        });
+
+        mediaRecorderRef.current.start();
+        setIsListening(true);
+      })
+      .catch(error => console.log('Error accessing the microphone:', error));
+  }, [language, stopisListening]);
 
   const toggleListening = useCallback(() => {
     if (!isListening) {
-      speechRecognition.current?.start();
+      startisListening();
     } else {
-      speechRecognition.current?.stop();
+      stopisListening();
     }
-    setIsListening(!isListening);
     inputRef.current.focus();
-  }, [isListening]);
+  }, [isListening, startisListening, stopisListening]);
 
   const startChat = () => {
     setCollectingUserInfo(true);
     setUserInfoStep('name');
-    setChatMessages([{ type: 'bot', text: "Type your name" }]);
+    handleBotMessage("Type your name");
     setChatStarted(true);
   };
 
@@ -104,7 +192,7 @@ const MainContent = () => {
       setIsLoading(false);
       setInputDisabled(true);
       setIsListening(false); 
-      const response = await fetch('https://34.100.242.45:9070/process_responses', {
+      const response = await fetch('https://34.29.182.251:8090/process_responses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_responses: userResponses }),
@@ -118,7 +206,7 @@ const MainContent = () => {
 
   const fetchClinicSuggestions = async (userAddress) => {
     try {
-      const response = await fetch('https://34.100.242.45:9070/nearest_clinic', {
+      const response = await fetch('https://34.29.182.251:9070/nearest_clinic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address: userAddress }),
@@ -142,39 +230,38 @@ const MainContent = () => {
       context = await fetchContext(userResponses);
       let prompt = await generatePromptForTag(userName, tag, currentTagIndex, shuffledTags, apiStates, stateMappings, userStateMappings, context);
       try {
-        const response = await fetch('https://34.100.242.45:9070/predict', {
+        const response = await fetch('https://34.29.182.251:8080/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question: prompt, tag: tag, context: context}),
         });
         const data = await response.json();
-        setChatMessages((chatMessages) => [...chatMessages, { type: 'bot', text: data.response }]);
+        await handleBotMessage(data.response);
         setTimeout(async () => {
           const clinicSuggestions = await fetchClinicSuggestions(userAddress);
-          setChatMessages((chatMessages) => [...chatMessages, { type: 'bot', text: `You can visit any of the following clinics:\n ${clinicSuggestions}` }]);
+          await handleBotMessage(`You can visit any of the following clinics:\n ${clinicSuggestions}`);
           setShowFeedbackOptions(true);
         }, 2000);
       } catch (error) {
-        setChatMessages((chatMessages) => [...chatMessages, { type: 'bot', text: 'There was an error processing your request.' }]);
+        await handleBotMessage('There was an error processing your request.');
       }
     }
     else{
       let prompt = await generatePromptForTag(userName,tag, currentTagIndex, shuffledTags, apiStates, stateMappings, userStateMappings, context);
       try {
-        const response = await fetch('https://34.100.242.45:9070/predict', {
+        const response = await fetch('https://34.29.182.251:8080/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question: prompt, tag: tag, context: context}),
         });
         const data = await response.json();
-        const botQuestion = { type: 'bot', text: data.response };
-        setChatMessages((chatMessages) => [...chatMessages, botQuestion]);
+        await handleBotMessage(data.response);
         setApiStates((prevStates) => ({
           ...prevStates,
           [stateMappings[tag]]: [...prevStates[stateMappings[tag]], data.response],
         }));
       } catch (error) {
-        setChatMessages((chatMessages) => [...chatMessages, { type: 'bot', text: 'There was an error processing your request.' }]);
+        await handleBotMessage('There was an error processing your request.');
       }
     }
     setIsLoading(false);
@@ -183,37 +270,40 @@ const MainContent = () => {
 
   const handleInputChange = useCallback((event) => {
     setUserInput(event.target.value);
+    setTranslatedInput('');
+    setLastInputMethod('typing');
   }, []);
 
-  const handleSendMessage = useCallback(() => {
+  const handleSendMessage = useCallback(async () => {
     if (!userInput.trim() || isLoading) return;
     setInputDisabled(true);
+    const inputForBackend = lastInputMethod === 'speech' ? translatedInput : userInput;
     const newUserMessage = { type: 'user', text: userInput };
     setChatMessages(chatMessages => [...chatMessages, newUserMessage]);
 
     if (collectingUserInfo) {
       if (userInfoStep === 'name') {
-        setUserName(userInput);
+        setUserName(inputForBackend);
         setUserInfoStep('age');
-        setChatMessages(messages => [...messages, { type: 'bot', text: "Type your age" }]);
+        await handleBotMessage("Type your age");
         setUserInput(''); 
       } else if (userInfoStep === 'age') {
-        setUserAge(userInput);
+        setUserAge(inputForBackend);
         setUserInfoStep('gender');
-        setChatMessages(messages => [...messages, { type: 'bot', text: "Type your gender" }]);
+        await handleBotMessage("Type your gender");
         setUserInput(''); 
       } else if (userInfoStep === 'gender') {
-        setUserGender(userInput);
+        setUserGender(inputForBackend);
         setUserInfoStep('address');
-        setChatMessages(messages => [...messages, { type: 'bot', text: "Type your address" }]);
+        await handleBotMessage("Type your address");
         setUserInput(''); 
       } else if (userInfoStep === 'address') {
-        setUserAddress(userInput);
+        setUserAddress(inputForBackend);
         setCollectingUserInfo(false);
         const shuffled = shuffleArray([...initialTags]);
         shuffled.push('report');
         setShuffledTags(shuffled);
-        setChatMessages(messages => [...messages, { type: 'bot', text: `Hi ${userName}, I am your doctor. How can I help you today?` }]);
+        await handleBotMessage(`Hi ${userName}, I am your doctor. How can I help you today?`);
         setChatStarted(true);
         setUserInput('');
       }
@@ -221,7 +311,7 @@ const MainContent = () => {
         if (currentTagIndex === -1) {
             setApiStates(prevStates => ({
               ...prevStates,
-              greeting_response: userInput,
+              greeting_response: inputForBackend,
             }));
             setCurrentTagIndex(0);
           } else {
@@ -229,7 +319,7 @@ const MainContent = () => {
             const userStateKey = userStateMappings[currentTag];
             setApiStates(prevStates => ({
               ...prevStates,
-              [userStateKey]: [...prevStates[userStateKey], userInput],
+              [userStateKey]: [...prevStates[userStateKey], inputForBackend],
             }));
         
             const nextIndex = currentTagIndex + 1;
@@ -240,20 +330,26 @@ const MainContent = () => {
         }
 
     setUserInput('');
+    setTranslatedInput(''); 
     setInputDisabled(false);
     inputRef.current.focus();
     // eslint-disable-next-line
-  }, [userInput, isLoading, chatMessages, collectingUserInfo, userInfoStep, userName, currentTagIndex, shuffledTags]);
+  }, [translatedInput, userInput, isLoading, chatMessages, collectingUserInfo, userInfoStep, userName, currentTagIndex, shuffledTags]);
 
-  const handleFeedbackResponse = (response) => {
-    setChatMessages(chatMessages => [...chatMessages, { type: 'user', text: response }]);
+  const handleLanguageChange = useCallback((event) => {
+    setLanguage(event.target.value);
+    if (isListening) {
+      stopisListening();
+    }
+    setUserInput('');
+  }, [isListening, stopisListening]);
+
+  const handleFeedbackResponse = async (response) => {
+    await handleBotMessage(response);
     setShowFeedbackOptions(false);
-    setTimeout(() => {
-      setChatMessages(chatMessages => [...chatMessages, { type: 'bot', text: "Thank you for your feedback!" }]);
-      setFinalBotMessageShown(true);
-    }, 500);
+    await handleBotMessage("Thank you for your feedback!");
+    setFinalBotMessageShown(true);
   };
-  
 
   const shuffleArray = (array) => {
     for (let i = array.length - 1; i > 0; i--) {
@@ -276,6 +372,8 @@ const MainContent = () => {
     setChatMessages([]);
     setCurrentTagIndex(-1);
     setUserInput('');
+    setTranslatedInput('');
+    setLastInputMethod('typing');
     setShuffledTags([]);
     setIsListening(false);
     setIsLoading(false);
@@ -286,7 +384,19 @@ const MainContent = () => {
     setUserAge('');
     setUserGender('');
     setUserAddress('');
-  }, []);
+    setApiStates({
+        greeting_response: "", 
+        symptom_questions: [],
+        lifestyle_questions: [],
+        genetic_questions: [],
+        report_questions: [],
+        user_symptoms: [],
+        user_lifestyle: [],
+        user_genetic: [],
+        user_report: [],
+    });
+}, []);
+
   
   useEffect(() => {
     if (chatAreaRef.current) {
@@ -297,6 +407,12 @@ const MainContent = () => {
 
     return (
         <div className="main-content">
+          <select className="language-select" value={language} onChange={handleLanguageChange}>
+                <option value="en-US">English</option>
+                <option value="es-ES">Spanish</option>
+                <option value="or-IN">Odia</option>
+                <option value="hi-IN">Hindi</option>
+              </select>
             {!chatStarted && (
             <button className="start-chat-button" onClick={startChat}>
             <FaPlay className="start-icon" /> Start Chat
@@ -309,7 +425,7 @@ const MainContent = () => {
                 <div key={index} className={`chat-message ${msg.type}-message`}>
                   {msg.type === 'user' ? <FaUser className="message-icon user-icon" /> : <FaRobot className="message-icon bot-icon" />}
                   <div className="chat-message-text">
-                    {msg.text.split('\n').map((line, lineIndex, array) => (
+                    {msg.text && msg.text.split('\n').map((line, lineIndex, array) => (
                       <React.Fragment key={lineIndex}>
                         {line !== '.' ? line : null}
                         {lineIndex !== array.length - 1 && line !== '.' && <br />}
