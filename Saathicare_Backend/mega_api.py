@@ -517,4 +517,4 @@ def translate_to_language():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=9070, ssl_context=('/home/curebay/SaathiCare/SaathiCare_React/cert.pem', '/home/curebay/SaathiCare/SaathiCare_React/key.pem'))
+    app.run(host='0.0.0.0', debug=True, port=9070, ssl_context=('cert.pem', 'key.pem'))
