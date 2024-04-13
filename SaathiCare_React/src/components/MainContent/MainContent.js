@@ -54,7 +54,7 @@ const MainContent = () => {
     }
     const simpleLanguageCode = simplifyLanguageCode(languageCode);
     try {
-      const response = await fetch('https://34.29.182.251:8090/translate_to_language', {
+      const response = await fetch('https://34.29.182.251:9070/translate_to_language', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: text, target_language: simpleLanguageCode })
@@ -119,7 +119,7 @@ const MainContent = () => {
             formData.append("language", language);
 
             try {
-              const response = await fetch('https://34.29.182.251:8090/speech_to_text', {
+              const response = await fetch('https://34.29.182.251:9070/speech_to_text', {
                 method: 'POST',
                 body: formData,
               });
@@ -192,7 +192,7 @@ const MainContent = () => {
       setIsLoading(false);
       setInputDisabled(true);
       setIsListening(false); 
-      const response = await fetch('https://34.29.182.251:8090/process_responses', {
+      const response = await fetch('https://34.29.182.251:9070/process_responses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_responses: userResponses }),
