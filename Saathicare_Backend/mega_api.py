@@ -177,20 +177,23 @@ def get_nearest_clinic():
 
 def predict_vertex_ai(endpoint_id, project_id, instance, context, tag, location="us-central1"):
     if len(context) < 15 and tag == 'report':
-        api_key = os.environ["MISTRAL_API_KEY"]
-        model = "open-mistral-7b"
-
-        client = MistralClient(api_key=api_key)
-
-        messages = [
-            ChatMessage(role="user", content=instance["prompt"])
-        ]
-
-        chat_response = client.chat(
-            model=model,
-            messages=messages,
-        )
-        return [chat_response.choices[0].message.content]
+        try:
+            api_key = os.environ["MISTRAL_API_KEY"]
+            model = "open-mistral-7b"
+    
+            client = MistralClient(api_key=api_key)
+    
+            messages = [
+                ChatMessage(role="user", content=instance["prompt"])
+            ]
+    
+            chat_response = client.chat(
+                model=model,
+                messages=messages,
+            )
+            return [chat_response.choices[0].message.content]
+        except:
+            return ['End of Report !!']
         
     else:
         client_options = {"api_endpoint": f"us-central1-aiplatform.googleapis.com"}
