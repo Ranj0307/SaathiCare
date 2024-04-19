@@ -223,47 +223,53 @@ def health_check():
 
 @app.route('/pdf_summarizer', methods=['POST'])
 def pdf_summarizer():
-    # Check if the request contains a file
     if 'file' not in request.files:
-        return 'No file part'
+        return 'No file part', 400
 
     file = request.files['file']
     file_extension = os.path.splitext(file.filename)[1].lower()
 
-    # Save the file
-    if file_extension == '.pdf':
-        file_path = 'uploaded_pdf.pdf'
-    elif file_extension == '.json':
-        file_path = 'uploaded_json.json'
-    else:
+    if file_extension not in ['.pdf', '.json']:
         return jsonify({"response": 'Unsupported file type'}), 401
-    
+
+    # Save the file
+    file_path = f'uploaded{file_extension}'
     file.save(file_path)
 
-    # Extract text from the PDF
+    # Extract text from the file
     extracted_text = extract_text_from_file(file_path)
-    instance = {"prompt": """Please analyze the medical report content provided and categorize the test results as follows:
-                - Critical Tests: List any tests with values outside the normal ranges that may require immediate medical attention.
-                - Considerable Tests: List tests with values that are not optimal and may need some medical attention or lifestyle changes.
-                - Normal Tests: List tests with values within normal ranges.
-                Also, provide a short general summary of the patient's overall health based on the test results.
-                NOTE: Please provide the analysis and summary based on the above guidelines.
 
-                 
-                Report Content:
-                {}
+    # Split the text into 4 chunks
+    length = len(extracted_text)
+    chunk_size = length // 4
+    chunks = [extracted_text[i:i + chunk_size] for i in range(0, length, chunk_size)]
 
-                Summary: <summay>
-                """.format(extracted_text)
-                ,
-                "max_tokens": 20000,
-                "temperature": 1.0,
-                "top_p": 1.0,
-                "top_k": 10}
-    prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, extracted_text, 'report')[0].replace('*', '').split('Summary:')[-1].strip() 
-    # while valid_response(prediction):
-    #     prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, extracted_text, 'report')[0].replace('*', '').split('Summary:')[-1].split('\n')[0].strip()
-    return jsonify({"response": prediction})
+    responses = []
+    for chunk in chunks:
+        instance = {
+            "prompt": """Please analyze the medical report content provided and categorize the test results as follows:
+                    - Critical Tests: List any tests with values outside the normal ranges that may require immediate medical attention.
+                    - Considerable Tests: List tests with values that are not optimal and may need some medical attention or lifestyle changes.
+                    - Normal Tests: List tests with values within normal ranges.
+                    Also, provide a short general summary of the patient's overall health based on the test results.
+                    NOTE: Please provide the analysis and summary based on the above guidelines.
+
+                    Report Content:
+                    {}
+
+                    Summary: <summary>
+                    """.format(chunk),
+            "max_tokens": 2000,
+            "temperature": 1.0,
+            "top_p": 1.0,
+            "top_k": 10
+        }
+        response = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, chunk, 'report')[0].replace('*', '').split('Summary:')[-1].strip()
+        responses.append(response)
+
+    # Combine all responses into one final response
+    final_response = ' '.join(responses)
+    return jsonify({"response": final_response})
 
 
 
