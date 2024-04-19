@@ -259,7 +259,7 @@ def pdf_summarizer():
                 "temperature": 1.0,
                 "top_p": 1.0,
                 "top_k": 10}
-    prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, extracted_text, 'report')[0].replace('*', '').split('Summary:')[-1].strip() 
+    prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, extracted_text, 'report')[0].replace('*', '').split('NOTE: Please provide the analysis and summary based on the above guidelines.')[-1].strip() 
     # while valid_response(prediction):
     #     prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, extracted_text, 'report')[0].replace('*', '').split('Summary:')[-1].split('\n')[0].strip()
     return jsonify({"response": prediction})
