@@ -67,6 +67,35 @@ df = pd.read_csv(labels_path)
 
 
 
+
+def json_to_text(data, indent=0):
+    """Recursively convert JSON data to text."""
+    text_summary = ""
+    if isinstance(data, dict):
+        for key, value in data.items():
+            text_summary += "    " * indent + str(key) + ": "
+            if isinstance(value, (dict, list)):
+                text_summary += "\n" + json_to_text(value, indent + 1)
+            else:
+                text_summary += str(value) + "\n"
+    elif isinstance(data, list):
+        for item in data:
+            if isinstance(item, (dict, list)):
+                text_summary += json_to_text(item, indent + 1)
+            else:
+                text_summary += "    " * indent + str(item) + "\n"
+    return text_summary
+
+def load_json_and_convert_to_text(file_path):
+    """Load a JSON file and convert it to a narrative text format."""
+    try:
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+        return json_to_text(data)
+    except Exception as e:
+        return f"An error occurred while processing the file: {e}"
+        
+
 def extract_text_from_file(file_path):
     file_name, file_extension = os.path.splitext(file_path)
     if file_extension.lower() == '.pdf':
@@ -86,9 +115,7 @@ def extract_text_from_pdf(pdf_path):
     return '\n'.join(full_text)
 
 def extract_text_from_json(json_path):
-    with open(json_path, 'r') as file:
-        data = json.load(file)
-        return str(data)
+    return load_json_and_convert_to_text(json_path)
 
 # Function to calculate distance using Haversine formula
 def calculate_distance(lat1, lon1, lat2, lon2):
