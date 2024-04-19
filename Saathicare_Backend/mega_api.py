@@ -88,7 +88,7 @@ def extract_text_from_pdf(pdf_path):
 def extract_text_from_json(json_path):
     with open(json_path, 'r') as file:
         data = json.load(file)
-        return data['text']
+        return str(data)
 
 # Function to calculate distance using Haversine formula
 def calculate_distance(lat1, lon1, lat2, lon2):
