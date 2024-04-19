@@ -16,3 +16,4 @@ tf-keras
 flask_sslify
 google-cloud-translate
 google-cloud-translate
+PyPDF2
