@@ -31,6 +31,7 @@ from transformers import pipeline
 from PyPDF2 import PdfReader
 
 
+
 app = Flask(__name__)
 CORS(app)
 
@@ -66,6 +67,15 @@ df = pd.read_csv(labels_path)
 
 
 
+def extract_text_from_file(file_path):
+    file_name, file_extension = os.path.splitext(file_path)
+    if file_extension.lower() == '.pdf':
+        return extract_text_from_pdf(file_path)
+    elif file_extension.lower() == '.json':
+        return extract_text_from_json(file_path)
+    else:
+        raise ValueError("Unsupported file format")
+
 def extract_text_from_pdf(pdf_path):
     reader = PdfReader(pdf_path)
     full_text = []
@@ -74,6 +84,11 @@ def extract_text_from_pdf(pdf_path):
         if page_text:
             full_text.append(page_text)
     return '\n'.join(full_text)
+
+def extract_text_from_json(json_path):
+    with open(json_path, 'r') as file:
+        data = json.load(file)
+        return data['text']
 
 # Function to calculate distance using Haversine formula
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -192,7 +207,7 @@ def pdf_summarizer():
     file.save(file_path)
 
     # Extract text from the PDF
-    extracted_text = extract_text_from_pdf(file_path)
+    extracted_text = extract_text_from_file(file_path)
     instance = {"prompt": """I want you to summarise the following report so I can understand it. 
                 Note: Use bullte points for the summarization.
                 Summary: 
