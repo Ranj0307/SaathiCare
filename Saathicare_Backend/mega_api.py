@@ -7,8 +7,6 @@ from flask_cors import CORS
 from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage
 
-from google.cloud import speech, translate_v2 as translate
-
 
 
 import numpy as np
@@ -48,13 +46,6 @@ with open('api_keys.json') as api_file:
 import os
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = 'caresaathi_servicefile.json'
 
-
-# Set up Google Cloud Speech client
-client = speech.SpeechClient()
-translate_client = translate.Client()
-
-
-
 # uri = "bolt://localhost:7687"
 uri = "neo4j+s://78e30e00.databases.neo4j.io"
 username = "neo4j"
@@ -62,7 +53,7 @@ password = "rbSRjgroav3_0bhoT_jvxBkCHu-oOxf2k5CCKIAA8Qo"
 
 
 # Hardcoded IDs
-ENDPOINT_ID="8062364723737264128"
+ENDPOINT_ID="5177492503057661952"
 PROJECT_ID="733932637612"
 
 
@@ -70,6 +61,17 @@ PROJECT_ID="733932637612"
 # Load the clinic data
 labels_path = 'Curebay_clinics.csv'
 df = pd.read_csv(labels_path)
+
+
+
+def extract_text_from_pdf(pdf_path):
+    reader = PdfReader(pdf_path)
+    full_text = []
+    for page in reader.pages:
+        page_text = page.extract_text()
+        if page_text:
+            full_text.append(page_text)
+    return '\n'.join(full_text)
 
 # Function to calculate distance using Haversine formula
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -172,6 +174,35 @@ def valid_response(prediction):
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "ok"}), 200
+
+
+
+@app.route('/pdf_summarizer', methods=['POST'])
+def pdf_summarizer():
+    # Check if the request contains a file
+    if 'file' not in request.files:
+        return 'No file part'
+
+    file = request.files['file']
+
+    # Save the file
+    file_path = 'uploaded_pdf.pdf'
+    file.save(file_path)
+
+    # Extract text from the PDF
+    extracted_text = extract_text_from_pdf(file_path)
+    instance = {"prompt": """I want you to summarise the following report so I can understand it. 
+                Note: Use bullte points for the summarization.
+                Summary: 
+                """,
+                "max_tokens": 512,
+                "temperature": 1.0,
+                "top_p": 1.0,
+                "top_k": 10}
+    prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, extracted_text, 'report')[0].replace('*', '').split('Summary:')[-1].strip() 
+    # while valid_response(prediction):
+    #     prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, extracted_text, 'report')[0].replace('*', '').split('Summary:')[-1].split('\n')[0].strip()
+    return jsonify({"response": prediction})
 
 
 
@@ -456,65 +487,6 @@ def process_responses():
 
     # Return the response as JSON
     return jsonify({'response': response})
-
-
-@app.route('/speech_to_text', methods=['POST'])
-def speech_to_text():
-    try:
-        # Check if the post request has the file part
-        if 'audio' not in request.files:
-            return jsonify({"error": "No audio part"}), 400
-        
-        audio_file = request.files['audio']
-        language = request.form.get('language', 'or-IN')  # Default to Odia
-
-        # Convert audio to text
-        audio = speech.RecognitionAudio(content=audio_file.read())
-        config = speech.RecognitionConfig(
-            encoding=speech.RecognitionConfig.AudioEncoding.WEBM_OPUS,
-            sample_rate_hertz=48000,
-            language_code=language,
-            enable_automatic_punctuation=True
-        )
-
-        response = client.recognize(config=config, audio=audio)
-
-        # Collecting the recognized text
-        transcribed_text = " ".join(result.alternatives[0].transcript for result in response.results)
-
-        if not transcribed_text:
-            return jsonify({"error": "No transcription available"}), 404
-
-        # Translate the text to English
-        translation = translate_client.translate(transcribed_text, target_language='en')
-        english_translation = translation['translatedText']
-        print(english_translation)
-        if transcribed_text:
-            return jsonify({"transcribedText": transcribed_text,"translatedText": english_translation}), 200
-        else:
-            return jsonify({"error": "No transcription available"}), 404
-    except Exception as e:
-        print(e)
-        return jsonify({"transcribedText": "Permission denied"}), 200
-    
-@app.route('/translate_to_language', methods=['POST'])
-def translate_to_language():
-    try:
-        data = request.get_json()
-        text = data.get('text')
-        target_language = data.get('target_language')
-
-        if not text or not target_language:
-            return jsonify({"error": "Missing text or target_language parameter"}), 400
-
-        translation = translate_client.translate(text, target_language=target_language)
-        translated_text = translation['translatedText']
-
-        return jsonify({"translatedText": translated_text}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=9070, ssl_context=('cert.pem', 'key.pem'))
