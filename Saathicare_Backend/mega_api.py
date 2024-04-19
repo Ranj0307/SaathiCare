@@ -242,24 +242,25 @@ def pdf_summarizer():
 
     # Extract text from the PDF
     extracted_text = extract_text_from_file(file_path)
-    instance = {"prompt": """Please analyze the medical report provided and categorize the test results as follows:
+    instance = {"prompt": """Please analyze the medical report content provided and categorize the test results as follows:
                 - Critical Tests: List any tests with values outside the normal ranges that may require immediate medical attention.
                 - Considerable Tests: List tests with values that are not optimal and may need some medical attention or lifestyle changes.
                 - Normal Tests: List tests with values within normal ranges.
-                
                 Also, provide a short general summary of the patient's overall health based on the test results.
-                
+                NOTE: Please provide the analysis and summary based on the above guidelines.
+
+                 
                 Report Content:
                 {}
-                
-                NOTE: Please provide the analysis and summary based on the above guidelines.
+
+                Summary: <summay>
                 """.format(extracted_text)
                 ,
                 "max_tokens": 2000,
                 "temperature": 1.0,
                 "top_p": 1.0,
                 "top_k": 10}
-    prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, extracted_text, 'report')[0].replace('*', '').split('NOTE: Please provide the analysis and summary based on the above guidelines.')[-1].strip() 
+    prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, extracted_text, 'report')[0].replace('*', '').split('Summary:')[-1].strip() 
     # while valid_response(prediction):
     #     prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, extracted_text, 'report')[0].replace('*', '').split('Summary:')[-1].split('\n')[0].strip()
     return jsonify({"response": prediction})
