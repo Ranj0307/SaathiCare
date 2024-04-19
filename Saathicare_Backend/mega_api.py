@@ -256,7 +256,7 @@ def pdf_summarizer():
                 Summary: <summay>
                 """.format(extracted_text)
                 ,
-                "max_tokens": 2000,
+                "max_tokens": 20000,
                 "temperature": 1.0,
                 "top_p": 1.0,
                 "top_k": 10}
