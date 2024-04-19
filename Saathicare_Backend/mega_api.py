@@ -28,6 +28,8 @@ import os
 from neo4j import GraphDatabase
 from transformers import pipeline
 
+from PyPDF2 import PdfReader
+
 
 app = Flask(__name__)
 CORS(app)
