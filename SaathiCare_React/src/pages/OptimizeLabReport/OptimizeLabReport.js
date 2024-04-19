@@ -47,7 +47,7 @@ const OptimizeLabReport = () => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const result = await response.json();
-        setChatMessages((prevMessages) => [...prevMessages, { type: 'bot', text: result, contentType: 'text' }]);
+        setChatMessages((prevMessages) => [...prevMessages, { type: 'bot', text: result.response, contentType: 'text' }]);
 
     } catch (error) {
         console.error("Error submitting file:", error);
