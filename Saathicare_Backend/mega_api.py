@@ -207,7 +207,7 @@ def predict_vertex_ai(endpoint_id, project_id, instance, context, tag, location=
             instances=[instance]
         )
 
-        print(response.predictions)
+        # print(response.predictions)
         return response.predictions
 
 def valid_response(prediction):
