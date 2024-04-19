@@ -215,7 +215,7 @@ def pdf_summarizer():
 
     # Extract text from the PDF
     extracted_text = extract_text_from_file(file_path)
-    instance = {"prompt": """I want you to summarise the following report so I can understand it. 
+    instance = {"prompt": """Please summarize the following medical report using bullet points so it's easy to understand. Each point should capture a key piece of information from the report:\n\n 
                 Note: Use bullte points for the summarization.
                 Summary: 
                 """,
