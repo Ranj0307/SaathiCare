@@ -242,10 +242,19 @@ def pdf_summarizer():
 
     # Extract text from the PDF
     extracted_text = extract_text_from_file(file_path)
-    instance = {"prompt": """Please summarize the following medical report using bullet points so it's easy to understand. Each point should capture a key piece of information from the report:\n\n 
-                Note: Use bullte points for the summarization.
-                Summary: 
-                """,
+    instance = {"prompt": """Please analyze the medical report provided and categorize the test results as follows:
+                - Critical Tests: List any tests with values outside the normal ranges that may require immediate medical attention.
+                - Considerable Tests: List tests with values that are not optimal and may need some medical attention or lifestyle changes.
+                - Normal Tests: List tests with values within normal ranges.
+                
+                Also, provide a short general summary of the patient's overall health based on the test results.
+                
+                Report Content:
+                {}
+                
+                NOTE: Please provide the analysis and summary based on the above guidelines.
+                """.format(extracted_text)
+                ,
                 "max_tokens": 512,
                 "temperature": 1.0,
                 "top_p": 1.0,
