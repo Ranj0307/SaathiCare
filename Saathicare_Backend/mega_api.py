@@ -201,9 +201,16 @@ def pdf_summarizer():
         return 'No file part'
 
     file = request.files['file']
+    file_extension = os.path.splitext(file.filename)[1].lower()
 
     # Save the file
-    file_path = 'uploaded_pdf.pdf'
+    if file_extension == '.pdf':
+        file_path = 'uploaded_pdf.pdf'
+    elif file_extension == '.json':
+        file_path = 'uploaded_json.json'
+    else:
+        return jsonify({"response": 'Unsupported file type'}), 401
+    
     file.save(file_path)
 
     # Extract text from the PDF
