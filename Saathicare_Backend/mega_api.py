@@ -255,7 +255,7 @@ def pdf_summarizer():
                 NOTE: Please provide the analysis and summary based on the above guidelines.
                 """.format(extracted_text)
                 ,
-                "max_tokens": 512,
+                "max_tokens": 2000,
                 "temperature": 1.0,
                 "top_p": 1.0,
                 "top_k": 10}
