@@ -177,6 +177,7 @@ def get_nearest_clinic():
 
 def predict_vertex_ai(endpoint_id, project_id, instance, context, tag, location="us-central1"):
     if len(context) < 15 and tag == 'report':
+        print('generated from part 1')
         try:
             api_key = os.environ["MISTRAL_API_KEY"]
             model = "open-mistral-7b"
@@ -196,6 +197,7 @@ def predict_vertex_ai(endpoint_id, project_id, instance, context, tag, location=
             return ['End of Report !!']
         
     else:
+        print('generated from part 2')
         client_options = {"api_endpoint": f"us-central1-aiplatform.googleapis.com"}
         client = aiplatform.gapic.PredictionServiceClient(client_options=client_options)
 
