@@ -15,5 +15,5 @@ tensorflow
 tf-keras
 flask_sslify
 google-cloud-translate
-pip install google-cloud-speech
+google-cloud-speech
 PyPDF2
