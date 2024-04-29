@@ -256,36 +256,69 @@ def pdf_summarizer():
     # Extract text from the file
     extracted_text = extract_text_from_file(file_path)
 
-    # Split the text into 4 chunks
     length = len(extracted_text)
-    chunk_size = length // 4
+    print(length)
+    # chunk_size = length // 1
+    # chunks = [extracted_text[i:i + chunk_size] for i in range(0, length, chunk_size)]
+
+    chunk_size = 5000
     chunks = [extracted_text[i:i + chunk_size] for i in range(0, length, chunk_size)]
 
     responses = []
+    patient_name = ["- **Name of the Patient**: [Patient's Name Here]"] + [''] * (len(chunks) - 1)
+    i = 0
     for chunk in chunks:
         instance = {
-            "prompt": """Please analyze the medical report content provided and categorize the test results as follows:
-                    - Critical Tests: List any tests with values outside the normal ranges that may require immediate medical attention.
-                    - Considerable Tests: List tests with values that are not optimal and may need some medical attention or lifestyle changes.
-                    - Normal Tests: List tests with values within normal ranges.
-                    Also, provide a short general summary of the patient's overall health based on the test results.
-                    NOTE: Please provide the analysis and summary based on the above guidelines.
+            "prompt": """
+            Please analyze the medical report content provided below and categorize the test results. Use the following format strictly:
+            - **Patient's Info**: 
+            {}
+            - **General Health Summary**: Provide a brief summary of the patient's overall health based on the test results.
+            - **Test Results Analysis**:
+            - Provide the test results in bullet points, clearly categorizing them under each relevant heading as follows:
+                - **Critical Tests**: List any tests with values outside the normal ranges that may require immediate medical attention.
+                - **Considerable Tests**: List tests with values that are not optimal and may need some medical attention or lifestyle changes.
+                - **Normal Tests**: List tests with values within normal ranges.
+            - **Additional Notes**: Any other relevant information or observations.
 
-                    Report Content:
-                    {}
+            **NOTE**: Analysis and summaries should adhere strictly to the above guidelines for clarity and consistency.
 
-                    Summary: <summary>
-                    """.format(chunk),
+            **Report Content**:
+            {}
+
+            Kindly ensure the analysis is concise and directly correlates to the provided test results, focusing on accuracy and clarity in the summary.
+
+            """.format(patient_name[i], chunk),
             "max_tokens": 2000,
             "temperature": 1.0,
             "top_p": 1.0,
             "top_k": 10
         }
-        response = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, chunk, 'report')[0].replace('*', '').split('Summary:')[-1].strip()
+        i += 1
+        response = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, chunk, 'report')[0].replace('*', '').split('Output:')[-1].strip().replace(chunk, '')
         responses.append(response)
 
     # Combine all responses into one final response
     final_response = ' '.join(responses)
+    # instance = {
+    #     "prompt": """Please summarize the attached medical report content strictly in the following format:
+    #             - Patient's Name: Name of the Patient.
+    #             - bullet point 1
+    #             - bullet point 2
+    #             - bullet point 3 and so on as needed
+    #             Also, provide a short general summary of the patient's overall health based on the test results.
+    #             NOTE: Please provide the analysis and summary based on the above guidelines.
+
+    #             Report Content:
+    #             {}
+
+    #             """.format(final_response),
+    #     "max_tokens": 2000,
+    #     "temperature": 1.0,
+    #     "top_p": 1.0,
+    #     "top_k": 10
+    # }
+    # final_response_1 = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, final_response, 'report')[0].replace('*', '').split('Summary:')[-1].strip()
     return jsonify({"response": final_response})
 
 
@@ -582,7 +615,7 @@ def speech_to_text():
             return jsonify({"error": "No audio part"}), 400
 
         audio_file = request.files['audio']
-        language = request.form.get('language', 'or-IN')  # Default to Odia
+        language = request.form.get('language', 'or-IN')  
 
         # Convert audio to text
         audio = speech.RecognitionAudio(content=audio_file.read())
