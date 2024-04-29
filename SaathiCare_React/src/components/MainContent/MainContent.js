@@ -230,7 +230,7 @@ const MainContent = () => {
       context = await fetchContext(userResponses);
       let prompt = await generatePromptForTag(userName, tag, currentTagIndex, shuffledTags, apiStates, stateMappings, userStateMappings, context);
       try {
-        const response = await fetch('https://34.93.4.171:8080/predict', {
+        const response = await fetch('https://34.93.4.171:9070/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question: prompt, tag: tag, context: context}),
@@ -249,7 +249,7 @@ const MainContent = () => {
     else{
       let prompt = await generatePromptForTag(userName,tag, currentTagIndex, shuffledTags, apiStates, stateMappings, userStateMappings, context);
       try {
-        const response = await fetch('https://34.93.4.171:8080/predict', {
+        const response = await fetch('https://34.93.4.171:9070/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question: prompt, tag: tag, context: context}),
