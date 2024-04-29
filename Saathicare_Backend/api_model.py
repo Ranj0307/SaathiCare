@@ -68,4 +68,4 @@ def predict():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=9080, debug = True, ssl_context=('/home/curebay/SaathiCare/SaathiCare_React/cert.pem', '/home/curebay/SaathiCare/SaathiCare_React/key.pem'))
+    app.run(host='0.0.0.0', port=9080, debug = True, ssl_context=('cert.pem', 'key.pem'))
