@@ -143,9 +143,9 @@ def process_responses():
 
     if response == '':
         for disease in diseases:
-        with open(f'DiseaseData/{disease_name}.txt', 'w') as file:
-            data_text = file.read()
-            response += data_text
+            with open(f'DiseaseData/{disease_name}.txt', 'w') as file:
+                data_text = file.read()
+                response += data_text
 
     # Return the response as JSON
     return jsonify({'response': response})
