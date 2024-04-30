@@ -55,9 +55,9 @@ import os
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = 'caresaathi_servicefile.json'
 
 # uri = "bolt://localhost:7687"
-uri = "neo4j+s://21c7fc89.databases.neo4j.io"
+uri = "neo4j+s://78e30e00.databases.neo4j.io"
 username = "neo4j"
-password = "Z3_iVqR93fjG55OEjzhx1N_hUaKEAEDJb3c8sU2BQPg"
+password = "rbSRjgroav3_0bhoT_jvxBkCHu-oOxf2k5CCKIAA8Qo"
 
 
 # Hardcoded IDs
@@ -650,14 +650,14 @@ def speech_to_text():
 def translate_to_language():
     try:
         data = request.get_json()
-        text = data.get('text')
+        text = data.get('text').replace('\n', '{}')
         target_language = data.get('target_language')
 
         if not text or not target_language:
             return jsonify({"error": "Missing text or target_language parameter"}), 400
 
         translation = translate_client.translate(text, target_language=target_language)
-        translated_text = translation['translatedText']
+        translated_text = translation['translatedText'].replace('{}', '\n')
 
         return jsonify({"translatedText": translated_text}), 200
     except Exception as e:
