@@ -54,6 +54,7 @@ with open('api_keys.json') as api_file:
 import os
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = 'caresaathi_servicefile.json'
 
+# uri = "bolt://localhost:7687"
 uri = "neo4j+s://21c7fc89.databases.neo4j.io"
 username = "neo4j"
 password = "Z3_iVqR93fjG55OEjzhx1N_hUaKEAEDJb3c8sU2BQPg"
@@ -360,7 +361,18 @@ def interactive_physician_chatbot():
         prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, context, tag)[0].replace('*', '').split('Genetic:')[-1].split('\n')[0].strip()
         while valid_response(prediction):
             prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, context, tag)[0].replace('*', '').split('Genetic:')[-1].split('\n')[0].strip()
-        
+
+    elif tag == 'ongoing_medications':
+        instance = {"prompt": question,
+                "max_tokens": 512,
+                "temperature": 1.0,
+                "top_p": 1.0,
+                "top_k": 10}
+        prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, context, tag)[0].replace('*', '').split('Ongoing_medications:')[-1].split('\n')[0].strip()
+        while valid_response(prediction):
+            prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, context, tag)[0].replace('*', '').split('Ongoing_medications:')[-1].split('\n')[0].strip()
+
+    
     elif tag == 'report':
         instance = {"prompt": question,
                 "max_tokens": 512,
