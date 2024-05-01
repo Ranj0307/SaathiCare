@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { FaRobot, FaUser, FaPlay, FaMicrophone, FaPaperPlane, FaHourglassHalf } from 'react-icons/fa';
+import { FaRobot, FaUser, FaPlay, FaMicrophone, FaPaperPlane, FaHourglassHalf, FaVolumeUp } from 'react-icons/fa';
 import hark from 'hark';
 import './MainContent.css';
 
@@ -32,14 +32,15 @@ const MainContent = () => {
   const [waitingForReportUploadResponse, setWaitingForReportUploadResponse] = useState(false);
   const [shouldCallApiForReport, setShouldCallApiForReport] = useState(false);
   const [reportContext, setReportContext] = useState('');
+  const [speakingIndex, setSpeakingIndex] = useState(null);
+  const [yesOption, setYesOption] = useState('Yes');
+  const [noOption, setNoOption] = useState('No');
 
-  const initialTags = ['symptom', 'lifestyle', 'genetic'];
+  const initialTags = ['symptom', 'lifestyle', 'genetic', 'ongoing_medications'];
 
   const simplifyLanguageCode = (languageCode) => {
     const languageMap = {
       'en-US': 'en',
-      'es-ES': 'es',
-      'or-IN': 'or',
       'hi-IN': 'hi'
     };
     return languageMap[languageCode] || languageCode.split('-')[0];
@@ -85,6 +86,14 @@ const MainContent = () => {
     setIsLoading(false);
 };
 
+      // eslint-disable-next-line
+      const handleUserMessage = async (message) => {
+        setIsLoading(true);
+        const translatedMessage = await translateText(message, language);
+        const textMessage = typeof translatedMessage === 'string' ? translatedMessage : 'Invalid message format';
+        setChatMessages((prevMessages) => [...prevMessages, { type: 'user', text: textMessage }]);
+        setIsLoading(false);
+    };
 
   const stopisListening = useCallback(() => {
     if (mediaRecorderRef.current) {
@@ -173,6 +182,7 @@ const MainContent = () => {
     symptom: 'symptom_questions',
     lifestyle: 'lifestyle_questions',
     genetic: 'genetic_questions',
+    ongoing_medications: 'medications_questions',
     report: 'report_questions',
   }), []);
 
@@ -180,6 +190,7 @@ const MainContent = () => {
     symptom: 'user_symptoms',
     lifestyle: 'user_lifestyle',
     genetic: 'user_genetic',
+    ongoing_medications: 'user_medications',
     report: 'user_report',
   };
 
@@ -188,14 +199,17 @@ const MainContent = () => {
     symptom_questions: [],
     lifestyle_questions: [],
     genetic_questions: [],
+    medications_questions: [],
     report_questions: [],
     user_symptoms: [],
     user_lifestyle: [],
     user_genetic: [],
+    user_medications: [],
     user_report: [],
   });
 
   const fetchContext = async (userResponses) => {
+    console.log('Current report context:', reportContext);
     try {
       setIsLoading(false);
       setInputDisabled(true);
@@ -208,6 +222,7 @@ const MainContent = () => {
       const data = await response.json();
       let context= data.response;
       if (reportContext) {
+        console.log(reportContext);
         context += `\nPatients Lab Reports: ${reportContext}`;
       }
       return context;
@@ -238,7 +253,8 @@ const MainContent = () => {
       const userResponses = {
         lifestyle: apiStates.user_lifestyle.join(", "),
         symptom: apiStates.user_symptoms.join(", "),
-        genetic: apiStates.user_genetic.join(", ")
+        genetic: apiStates.user_genetic.join(", "),
+        ongoing_medications: apiStates.user_medications.join(", ")
       };
       setInputDisabled(false);
       context = await fetchContext(userResponses);
@@ -280,7 +296,7 @@ const MainContent = () => {
     }
     setIsLoading(false);
     // eslint-disable-next-line
-  }, [userName, userAddress, currentTagIndex, shuffledTags, apiStates, waitingForReportUploadResponse, fetchContext, fetchClinicSuggestions, handleBotMessage]);
+  }, [userName, userAddress, currentTagIndex, shuffledTags, apiStates, waitingForReportUploadResponse,reportContext, fetchContext, fetchClinicSuggestions, handleBotMessage]);
 
   useEffect(() => {
     setInputDisabled(isLoading || waitingForReportUploadResponse || showUploadModal || reportUploadAsked);
@@ -305,20 +321,20 @@ const MainContent = () => {
       handleApiCall('report');
       setShouldCallApiForReport(false);
     }
-  }, [waitingForReportUploadResponse, shouldCallApiForReport, handleApiCall]);
+  }, [waitingForReportUploadResponse, shouldCallApiForReport, reportContext,handleApiCall]);
   
   const handleReportUploadResponse = useCallback((response) => {
     setReportUploadAsked(false);
     setInputDisabled(false);
     setWaitingForReportUploadResponse(false);
   
-    if (response === 'Yes') {
+    if (response === yesOption) {
       setShowUploadModal(true);
     } else {
-      setChatMessages((prevMessages) => [...prevMessages, { type: 'user', text: response }]);
+      handleUserMessage(response);
       setShouldCallApiForReport(true);
     }
-  }, []);
+  }, [handleUserMessage,yesOption]);
 
 const handleFileUpload = useCallback(async (file) => {
   setShowUploadModal(false);
@@ -327,17 +343,16 @@ const handleFileUpload = useCallback(async (file) => {
   formData.append('file', file);
 
   try {
-      setChatMessages((prevMessages) => [...prevMessages, { type: 'user', text: `Uploaded Report: ${file.name}` }]);
+      handleUserMessage(`Uploaded Report: ${file.name}`);
       const uploadResponse = await fetch('https://34.93.4.171:9070/pdf_summarizer', {
           method: 'POST',
           body: formData,
       });
       const uploadData = await uploadResponse.json();
       if (uploadData && typeof uploadData.response === 'string') {
-        setReportContext(uploadData.response);
+        const contextUpload = uploadData.response;
+        setReportContext(contextUpload);
         await handleBotMessage(uploadData.response);
-        handleApiCall('report');
-
     } else {
         await handleBotMessage("Received data from report analysis is not in expected format or is missing.");
         handleApiCall('report');
@@ -350,6 +365,12 @@ const handleFileUpload = useCallback(async (file) => {
       // eslint-disable-next-line
 }, [handleApiCall, fetchClinicSuggestions, userAddress]);
 
+useEffect(() => {
+  if (reportContext) {
+      handleApiCall('report');
+  }
+  // eslint-disable-next-line
+}, [reportContext]);
 
 const UploadModal = () => (
   <div className="upload-modal">
@@ -443,12 +464,20 @@ const handleLanguageChange = useCallback((event) => {
     setUserInput('');
   }, [isListening, stopisListening]);
 
+  useEffect(() => {
+    if (showFeedbackOptions) {
+      handleBotMessage("Was this chat helpful?");
+    }
+    // eslint-disable-next-line
+  }, [showFeedbackOptions]);
+  
   const handleFeedbackResponse = async (response) => {
-    await handleBotMessage(response);
+    await handleUserMessage(response);
     setShowFeedbackOptions(false);
     await handleBotMessage("Thank you for your feedback!");
     setFinalBotMessageShown(true);
   };
+  
 
   const shuffleArray = (array) => {
     for (let i = array.length - 1; i > 0; i--) {
@@ -466,6 +495,41 @@ const handleLanguageChange = useCallback((event) => {
     }
   }, [isLoading]);
 
+  const speakMessage = (message, index) => {
+    if (speechSynthesis.speaking) {
+      speechSynthesis.cancel();
+      if (speakingIndex === index) {
+        setSpeakingIndex(null);
+        return;
+      }
+    }
+  
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.lang = simplifyLanguageCode(language);
+  
+    utterance.onstart = () => {
+      setSpeakingIndex(index);
+    };
+  
+    utterance.onend = () => {
+      setSpeakingIndex(null);
+    };
+  
+    speechSynthesis.speak(utterance);
+  };
+
+  const updateOptionTranslations = useCallback(async () => {
+    const translatedYes = await translateText('Yes', language);
+    const translatedNo = await translateText('No', language);
+    setYesOption(translatedYes);
+    setNoOption(translatedNo);
+        // eslint-disable-next-line
+  }, [language]);
+  
+  useEffect(() => {
+    updateOptionTranslations();
+  }, [language, updateOptionTranslations]);
+  
   const resetChat = useCallback(() => {
     setChatStarted(false);
     setChatMessages([]);
@@ -483,15 +547,20 @@ const handleLanguageChange = useCallback((event) => {
     setUserAge('');
     setUserGender('');
     setUserAddress('');
+    setYesOption('Yes');
+    setNoOption('No');
+    setSpeakingIndex(null);
     setApiStates({
         greeting_response: "", 
         symptom_questions: [],
         lifestyle_questions: [],
         genetic_questions: [],
+        medications_questions: [],
         report_questions: [],
         user_symptoms: [],
         user_lifestyle: [],
         user_genetic: [],
+        user_medications: [],
         user_report: [],
     });
 }, []);
@@ -508,8 +577,6 @@ const handleLanguageChange = useCallback((event) => {
         <div className="main-content">
           <select className="language-select" value={language} onChange={handleLanguageChange}>
                 <option value="en-US">English</option>
-                <option value="es-ES">Spanish</option>
-                <option value="or-IN">Odia</option>
                 <option value="hi-IN">Hindi</option>
               </select>
             {!chatStarted && (
@@ -530,26 +597,23 @@ const handleLanguageChange = useCallback((event) => {
                         {lineIndex !== array.length - 1 && line !== '.' && <br />}
                       </React.Fragment>
                     ))}
+                    {msg.type === 'bot' && (
+                      <FaVolumeUp className={`speak-icon ${speakingIndex === index ? 'speaking' : ''}`} onClick={() => speakMessage(msg.text, index)} />
+                    )}
                   </div>
                 </div>
               ))}
               {reportUploadAsked && (
                 <div className="feedback-options">
-                    <button onClick={() => handleReportUploadResponse('Yes')}>Yes</button>
-                    <button onClick={() => handleReportUploadResponse('No')}>No</button>
+                  <button onClick={() => handleReportUploadResponse(yesOption)}>{yesOption}</button>
+                  <button onClick={() => handleReportUploadResponse(noOption)}>{noOption}</button>
                 </div>
             )}
             {showUploadModal && <UploadModal />}
               {showFeedbackOptions && (
-                <div className="chat-message bot-message">
-                  <FaRobot className="message-icon bot-icon" />
-                  <div>Was this chat helpful?</div>
-                </div>
-              )}
-              {showFeedbackOptions && (
                 <div className="feedback-options">
-                  <button onClick={() => handleFeedbackResponse('Yes')}>Yes</button>
-                  <button onClick={() => handleFeedbackResponse('No')}>No</button>
+                  <button onClick={() => handleFeedbackResponse(yesOption)}>{yesOption}</button>
+                  <button onClick={() => handleFeedbackResponse(noOption)}>{noOption}</button>
                 </div>
               )}
             </div>
@@ -623,13 +687,30 @@ export default MainContent;
               I am playing a doctor in a play. Please generate one question that I should ask a patient based on the previous responses, about their ${tag}.
               Format your response strictly as follows:
               ${tag.charAt(0).toUpperCase() + tag.slice(1)}: [A question related to the ${tag} they are having].`;
-  } else if (currentTagIndex === shuffledTags.length - 1) {
+  } else if (currentTagIndex === 3) {
+    const previousTags = shuffledTags.slice(0, 2);
+    const previousQuestions = previousTags.map(tag => apiStates[stateMappings[tag]].slice(-1)[0]);
+    const previousResponses = previousTags.map(tag => apiStates[userStateMappings[tag]].slice(-1)[0]);
+
+    prompt = `Greeting Question: ${greetingQuestion}
+              Greeting Response from Patient: ${greetingResponse}
+              First Question: ${previousQuestions[0]}
+              First Response from Patient: ${previousResponses[0]}
+              Second Question: ${previousQuestions[1]}
+              Second Response from Patient: ${previousResponses[1]}
+              Third Question: ${previousQuestions[2]}
+              Third Response from Patient: ${previousResponses[2]}
+              I am playing a doctor in a play. Please generate one question that I should ask a patient based on the previous responses, about their ${tag}.
+              Format your response strictly as follows:
+              ${tag.charAt(0).toUpperCase() + tag.slice(1)}: [A question related to the ${tag} they are having].`;
+  }else if (currentTagIndex === shuffledTags.length - 1) {
     prompt = `Greeting Question: ${greetingQuestion}
               Greeting Response from Patient: ${greetingResponse}
               Patient symptoms: ${apiStates.user_symptoms.join(", ")}.
               Lifestyle and eating habits: ${apiStates.user_lifestyle.join(", ")}.
               Family history of diseases: ${apiStates.user_genetic.join(", ")}.
-
+              User Current medications: ${apiStates.user_medications.join(", ")}.
+              
               Data Source for analysis:
               ${fetchedContext}
 
