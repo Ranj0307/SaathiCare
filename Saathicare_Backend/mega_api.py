@@ -388,7 +388,6 @@ def interactive_physician_chatbot():
         question = question.split("Based on the patient's symptoms and provided context, provide a possible diagnosis, recommended treatments, and specialists to consult.")[0] + """
         Based on the patient's conversation and the provided context, please compose a recommendation letter for a doctor.
         NOTE: 1. The letter should clearly outline the patient's condition for the concerned doctor to understand.
-        NOTE: 2. Include the patient's name in the letter if it has been provided in the context.
         NOTE: 3. This will not be considered as a real letter, so don't give any note or precaution with your response.
 
         Write your response in strictly the following format:
@@ -404,9 +403,6 @@ def interactive_physician_chatbot():
         [Conclude with a courteous closing, reiterating any urgent concerns or the importance of timely evaluation.]
         
         Thank you for your attention to this matter.
-        
-        Sincerely,
-        [Your Name]
 
         Please ensure the letter is clear and actionable. 
         
@@ -418,10 +414,10 @@ def interactive_physician_chatbot():
                 "temperature": 1.0,
                 "top_p": 1.0,
                 "top_k": 10}
-        prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, context, tag)[0]#.split('END OF RESPONSE\nOutput:')[-1].strip()#.replace('*', '').replace('END OF RESPONSE', '').replace('"', '')
+        prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, context, tag)[0].split('END OF RESPONSE\nOutput:')[-1].strip()#.replace('*', '').replace('END OF RESPONSE', '').replace('"', '')
         print(prediction)
         while valid_response(prediction):
-            prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, context, tag)[0]#.split('END OF RESPONSE\nOutput:')[-1].strip()#.replace('*', '').replace('END OF RESPONSE', '').replace('"', '')
+            prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, context, tag)[0].split('END OF RESPONSE\nOutput:')[-1].strip()#.replace('*', '').replace('END OF RESPONSE', '').replace('"', '')
     
     elif tag == 'patient':
         question = question.split("Based on the patient's symptoms and provided context, provide a possible diagnosis, recommended treatments, and specialists to consult.")[0] + """
