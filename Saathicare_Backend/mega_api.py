@@ -414,7 +414,7 @@ def interactive_physician_chatbot():
                 "temperature": 1.0,
                 "top_p": 1.0,
                 "top_k": 10}
-        prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, context, tag)[0].split('END OF RESPONSE\nOutput:')[-1].strip().replace('*', '').replace('END OF RESPONSE', '').replace('"', '')
+        prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, context, tag)[0].split('END OF RESPONSE\nOutput:')[-1]#.strip().replace('*', '').replace('END OF RESPONSE', '').replace('"', '')
         print(prediction)
         while valid_response(prediction):
             prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, context, tag)[0].split('END OF RESPONSE\nOutput:')[-1].strip().replace('*', '').replace('END OF RESPONSE', '').replace('"', '')
