@@ -31,7 +31,7 @@ function NavBar() {
   return (
     <nav className="navbar">
       <div className="navbar-brand" onClick={handleChatbotClick}>
-        <img src="https://lh3.googleusercontent.com/u/0/drive-viewer/AKGpihbYUgV9yP3x10tHQ3v6MzOoLBoFEHOpEzJJqW-ToQxKk8V5jtO0ngEn_geQloM7I1CLpGcwAh4g42cfrTy_pb-veyge=w1572-h1558" alt="Logo" className="navbar-logo" />
+        <img src="https://images.crunchbase.com/image/upload/c_pad,f_auto,q_auto:eco,dpr_1/nphb0dgvm0nrzqkymgyp" alt="Logo" className="navbar-logo" />
         <span className={`navbar-heading ${isActivePath('/') ? 'active' : ''}`}>CareSaathi</span>
       </div>
       <div className="navbar-items">
@@ -46,7 +46,7 @@ function NavBar() {
           {isDropdownOpen && (
             <div className="dropdown-content">
               <NavLink to="/image-analytics" className="dropdown-item" onClick={closeDropdown}>Image Analytics</NavLink>
-              <NavLink to="/extent-prediction" className="dropdown-item" onClick={closeDropdown}>Extent Prediction and Preventive Planning</NavLink>
+              <NavLink to="/extent-prediction" className="dropdown-item" onClick={closeDropdown}>Extend Prediction and Preventive Planning</NavLink>
             </div>
           )}
         </div>
