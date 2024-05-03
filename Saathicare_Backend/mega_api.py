@@ -390,6 +390,8 @@ def interactive_physician_chatbot():
         NOTE: 1. The letter should clearly outline the patient's condition for the concerned doctor to understand.
         NOTE: 2. Include the patient's name in the letter if it has been provided in the context.
         NOTE: 3. This will not be considered as a real letter, so don't give any note or precaution with your response.
+
+        Write your response in strictly the following format:
         
         Hello Doctor,
         
@@ -405,6 +407,8 @@ def interactive_physician_chatbot():
         
         Sincerely,
         [Your Name]
+
+        Please ensure the letter is clear and actionable. 
         
         END OF RESPONSE
         """
