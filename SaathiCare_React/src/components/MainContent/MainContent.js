@@ -62,7 +62,7 @@ const MainContent = () => {
     }
     const simpleLanguageCode = simplifyLanguageCode(languageCode);
     try {
-      const response = await fetch('https://34.93.4.171:9070/translate_to_language', {
+      const response = await fetch('https://34.123.66.225:9070/translate_to_language', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: text, target_language: simpleLanguageCode })
@@ -138,7 +138,7 @@ const MainContent = () => {
             formData.append("language", language);
 
             try {
-              const response = await fetch('https://34.93.4.171:9070/speech_to_text', {
+              const response = await fetch('https://34.123.66.225:9070/speech_to_text', {
                 method: 'POST',
                 body: formData,
               });
@@ -216,7 +216,7 @@ const MainContent = () => {
       setIsLoading(false);
       setInputDisabled(true);
       setIsListening(false); 
-      const response = await fetch('https://34.93.4.171:9070/process_responses', {
+      const response = await fetch('https://34.123.66.225:9070/process_responses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_responses: userResponses }),
@@ -235,7 +235,7 @@ const MainContent = () => {
 
   const fetchClinicSuggestions = async (userAddress) => {
     try {
-      const response = await fetch('https://34.93.4.171:9070/nearest_clinic', {
+      const response = await fetch('https://34.123.66.225:9070/nearest_clinic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address: userAddress }),
@@ -264,7 +264,7 @@ const MainContent = () => {
       setReportContextData(context);
       setReportPrompt(prompt);
       try {
-        const response = await fetch('https://34.93.4.171:9070/predict', {
+        const response = await fetch('https://34.123.66.225:9070/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question: prompt, tag: tag, context: context}),
@@ -283,7 +283,7 @@ const MainContent = () => {
     else{
       let prompt = await generatePromptForTag(userName,tag, currentTagIndex, shuffledTags, apiStates, stateMappings, userStateMappings, context);
       try {
-        const response = await fetch('https://34.93.4.171:9070/predict', {
+        const response = await fetch('https://34.123.66.225:9070/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question: prompt, tag: tag, context: context}),
@@ -348,7 +348,7 @@ const handleFileUpload = useCallback(async (file) => {
 
   try {
       handleUserMessage(`Uploaded Report: ${file.name}`);
-      const uploadResponse = await fetch('https://34.93.4.171:9070/pdf_summarizer', {
+      const uploadResponse = await fetch('https://34.123.66.225:9070/pdf_summarizer', {
           method: 'POST',
           body: formData,
       });
