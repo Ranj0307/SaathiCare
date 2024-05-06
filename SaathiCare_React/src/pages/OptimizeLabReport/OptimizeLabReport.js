@@ -38,7 +38,7 @@ const OptimizeLabReport = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
 
     try {
-        const response = await fetch('https://34.93.4.171:9070/pdf_summarizer', {
+        const response = await fetch('https://34.123.66.225:9070/pdf_summarizer', {
             method: 'POST',
             body: formData,
         });
