@@ -20,7 +20,7 @@ const Sidebar = () => {
 
   const fetchDoctorNotes = async () => {
     try {
-      const response = await fetch('https://34.93.4.171:9070/predict', {
+      const response = await fetch('https://34.123.66.225:9070/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: reportPrompt, tag: 'doctor', context: reportContextData}),
@@ -41,7 +41,7 @@ const Sidebar = () => {
 
   const fetchPatientEducation = async () => {
     try {
-      const response = await fetch('https://34.93.4.171:9070/predict', {
+      const response = await fetch('https://34.123.66.225:9070/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: reportPrompt, tag: 'patient', context: reportContextData}),
