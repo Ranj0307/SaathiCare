@@ -21,7 +21,7 @@ const FloatingAssistant = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('https://34.93.4.171:9070/process_query', {
+      const response = await fetch('https://34.123.66.225:9070/process_query', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
