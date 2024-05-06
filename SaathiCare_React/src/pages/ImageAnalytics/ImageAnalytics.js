@@ -35,7 +35,7 @@ const handleSendImage = async () => {
         if (fileInputRef.current) fileInputRef.current.value = '';
 
     try {
-        const response = await fetch('https://34.93.4.171:9080/predict', {
+        const response = await fetch('https://34.123.66.225:9080/predict', {
             method: 'POST',
             body: formData,
         });
