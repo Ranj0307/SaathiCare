@@ -12,10 +12,6 @@ const ExtentPrediction = () => {
   const [cityData, setCityData] = useState([]);
   const [diseaseData, setDiseaseData] = useState([]);
   const [projectedCases, setProjectedCases] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  
-
-  const rowsPerPage = 10;
 
   useEffect(() => {
     fetch('https://34.123.66.225:9070/load_data')
@@ -27,7 +23,6 @@ const ExtentPrediction = () => {
       })
       .then(data => setData(data))
       .catch(error => console.error('Error fetching data:', error));
-
   }, []);
 
   useEffect(() => {
@@ -64,83 +59,27 @@ const ExtentPrediction = () => {
   const handleStateChange = (event) => {
     setSelectedState(event.target.value);
   };
-// eslint-disable-next-line
+
   const handleCityChange = (event) => {
     setSelectedCity(event.target.value);
   };
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
+  const transformDataForGroupedBarChart = (data, column) => {
+    const filteredData = data.filter(d => d[column] != null && d[column] !== '');
+    const uniqueValues = Array.from(new Set(filteredData.map(d => d[column])));
+    return uniqueValues.map(value => {
+      return {
+        x: filteredData.map(d => d.CITY),
+        y: filteredData.map(d => (d[column] === value ? 1 : 0)),
+        type: 'bar',
+        name: `${value}`
+      };
+    });
   };
-
-// Function to transform data for stacked bar chart
-const transformDataForGroupedBarChart = (data, column) => {
-  const filteredData = data.filter(d => d[column] != null && d[column] !== ''); // Filter out null and empty string values
-  const uniqueValues = Array.from(new Set(filteredData.map(d => d[column])));
-  return uniqueValues.map(value => {
-    return {
-      x: filteredData.map(d => d.CITY),
-      y: filteredData.map(d => (d[column] === value ? 1 : 0)),
-      type: 'bar',
-      name: `${value}` // Name of the stack
-    };
-  });
-};
-
-  const indexOfLastRow = currentPage * rowsPerPage;
-  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = data.slice(indexOfFirstRow, indexOfLastRow);
 
   return (
     <div className="ExtentPrediction">
-    <FloatingAssistant />
-      <h2>Preview of CureBay Data</h2>
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>CODE</th>
-              <th>FIRSTNAME</th>
-              <th>LASTNAME</th>
-              <th>GENDER</th>
-              <th>BLOODGROUP</th>
-              <th>CITY</th>
-              <th>STATE</th>
-              <th>PINCODE</th>
-              <th>AGE</th>
-              <th>Disease</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentRows.map((row, index) => (
-              <tr key={index}>
-                <td>{row.CODE}</td>
-                <td>{row.FIRSTNAME}</td>
-                <td>{row.LASTNAME}</td>
-                <td>{row.GENDER}</td>
-                <td>{row.BLOODGROUP}</td>
-                <td>{row.CITY}</td>
-                <td>{row.STATE}</td>
-                <td>{row.PINCODE}</td>
-                <td>{row.AGE}</td>
-                <td>{row.Disease}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="pagination">
-        <button disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)}>
-          Prev
-        </button>
-        <span>{currentPage}</span>
-        <button disabled={currentPage === Math.ceil(data.length / rowsPerPage)} onClick={() => handlePageChange(currentPage + 1)}>
-          Next
-        </button>
-      </div>
-
-
+      <FloatingAssistant />
       <h2>Patient Characteristics by State</h2>
       <select onChange={handleStateChange}>
         <option value="">Select a State</option>
@@ -177,16 +116,13 @@ const transformDataForGroupedBarChart = (data, column) => {
                 layout={{ title: 'BMI Status Distribution', barmode: 'stack' }}
               />
             </div>
-          </div >
             <Plot
               data={[{ x: stateData.map(d => d.AGE), type: 'histogram', name: 'Age Distribution' }]}
               layout={{ title: 'Age Distribution', barmode: 'stack' }}
             />
+          </div>
         </div>
       )}
-
-
-<h2>Patient Characteristics by City in {selectedState}</h2>
       {selectedState && (
         <>
           <Plot
@@ -207,10 +143,6 @@ const transformDataForGroupedBarChart = (data, column) => {
           />
         </>
       )}
-
-
-
-
       <h2>Chronic Conditions Analysis</h2>
       {diseaseData.length > 0 && (
         <>
@@ -237,7 +169,6 @@ const transformDataForGroupedBarChart = (data, column) => {
           />
         </>
       )}
-  
       <h2>Projected Number of Cases of Each Disease in the Population of Odisha</h2>
       <div className="table-container">
       <table>
@@ -259,10 +190,8 @@ const transformDataForGroupedBarChart = (data, column) => {
         </tbody>
       </table>
       </div>
+    </div>
+  );
+};
 
-      </div>
-    );
-  };
-  
-  export default ExtentPrediction;
-  
+export default ExtentPrediction;
