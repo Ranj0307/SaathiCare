@@ -94,7 +94,6 @@ const transformDataForGroupedBarChart = (data, column) => {
   return (
     <div className="ExtentPrediction">
     <FloatingAssistant />
-      // <h2>Preview of CureBay Data</h2>
       <div className="table-container" style={{ display: 'none' }}>
         <table>
           <thead>
