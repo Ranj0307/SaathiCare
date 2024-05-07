@@ -129,7 +129,7 @@ const transformDataForGroupedBarChart = (data, column) => {
         </table>
       </div>
 
-      <div className="pagination">
+      <div className="pagination"  style={{ display: 'none' }}>
         <button disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)}>
           Prev
         </button>
