@@ -130,15 +130,15 @@ const transformDataForGroupedBarChart = (data, column) => {
       //   </table>
       // </div>
 
-      <div className="pagination">
-        <button disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)}>
-          Prev
-        </button>
-        <span>{currentPage}</span>
-        <button disabled={currentPage === Math.ceil(data.length / rowsPerPage)} onClick={() => handlePageChange(currentPage + 1)}>
-          Next
-        </button>
-      </div>
+      // <div className="pagination">
+      //   <button disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)}>
+      //     Prev
+      //   </button>
+      //   <span>{currentPage}</span>
+      //   <button disabled={currentPage === Math.ceil(data.length / rowsPerPage)} onClick={() => handlePageChange(currentPage + 1)}>
+      //     Next
+      //   </button>
+      // </div>
 
 
       <h2>Patient Characteristics by State</h2>
