@@ -94,41 +94,41 @@ const transformDataForGroupedBarChart = (data, column) => {
   return (
     <div className="ExtentPrediction">
     <FloatingAssistant />
-      <h2>Preview of CureBay Data</h2>
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>CODE</th>
-              <th>FIRSTNAME</th>
-              <th>LASTNAME</th>
-              <th>GENDER</th>
-              <th>BLOODGROUP</th>
-              <th>CITY</th>
-              <th>STATE</th>
-              <th>PINCODE</th>
-              <th>AGE</th>
-              <th>Disease</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentRows.map((row, index) => (
-              <tr key={index}>
-                <td>{row.CODE}</td>
-                <td>{row.FIRSTNAME}</td>
-                <td>{row.LASTNAME}</td>
-                <td>{row.GENDER}</td>
-                <td>{row.BLOODGROUP}</td>
-                <td>{row.CITY}</td>
-                <td>{row.STATE}</td>
-                <td>{row.PINCODE}</td>
-                <td>{row.AGE}</td>
-                <td>{row.Disease}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      // <h2>Preview of CureBay Data</h2>
+      // <div className="table-container">
+      //   <table>
+      //     <thead>
+      //       <tr>
+      //         <th>CODE</th>
+      //         <th>FIRSTNAME</th>
+      //         <th>LASTNAME</th>
+      //         <th>GENDER</th>
+      //         <th>BLOODGROUP</th>
+      //         <th>CITY</th>
+      //         <th>STATE</th>
+      //         <th>PINCODE</th>
+      //         <th>AGE</th>
+      //         <th>Disease</th>
+      //       </tr>
+      //     </thead>
+      //     <tbody>
+      //       {currentRows.map((row, index) => (
+      //         <tr key={index}>
+      //           <td>{row.CODE}</td>
+      //           <td>{row.FIRSTNAME}</td>
+      //           <td>{row.LASTNAME}</td>
+      //           <td>{row.GENDER}</td>
+      //           <td>{row.BLOODGROUP}</td>
+      //           <td>{row.CITY}</td>
+      //           <td>{row.STATE}</td>
+      //           <td>{row.PINCODE}</td>
+      //           <td>{row.AGE}</td>
+      //           <td>{row.Disease}</td>
+      //         </tr>
+      //       ))}
+      //     </tbody>
+      //   </table>
+      // </div>
 
       <div className="pagination">
         <button disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)}>
