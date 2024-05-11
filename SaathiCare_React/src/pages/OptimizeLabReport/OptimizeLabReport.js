@@ -47,7 +47,9 @@ const OptimizeLabReport = () => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const result = await response.json();
-        setChatMessages((prevMessages) => [...prevMessages, { type: 'bot', content: result.response, contentType: 'text' }]);
+        setChatMessages((prevMessages) => [...prevMessages, { type: 'bot', 
+                                                             content: result.response + '\n\nDisclaimer Verbaige: This system-generated summary is prone to errors and is for informational purposes only. Consult a healthcare provider before following any advice or taking medications suggested', 
+                                                             contentType: 'text' }]);
 
     } catch (error) {
         console.error("Error submitting file:", error);
