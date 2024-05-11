@@ -356,7 +356,7 @@ const handleFileUpload = useCallback(async (file) => {
       if (uploadData && typeof uploadData.response === 'string') {
         const contextUpload = uploadData.response;
         setReportContext(contextUpload);
-        await handleBotMessage(uploadData.response);
+        await handleBotMessage(uploadData.response + '\n\nDisclaimer Verbaige: This system-generated summary is prone to errors and is for informational purposes only. Consult a healthcare provider before following any advice or taking medications suggested');
     } else {
         await handleBotMessage("Received data from report analysis is not in expected format or is missing.");
         handleApiCall('report');
