@@ -382,7 +382,7 @@ def interactive_physician_chatbot():
         prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, context, tag)[0].split('END OF RESPONSE\nOutput:')[-1].strip().replace('*', '').replace('END OF RESPONSE', '').replace('"', '')
         while valid_response(prediction):
             prediction = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, context, tag)[0].split('END OF RESPONSE\nOutput:')[-1].strip().replace('*', '').replace('END OF RESPONSE', '').replace('"', '')
-        prediction += '\n\nDisclaimer Verbaige: This system-generated recommendation is prone to errors and is for informational purposes only. Consult a healthcare provider before following any advice or taking medications suggested'
+        prediction += '\n\nDisclaimer: This system-generated recommendation is prone to errors and is for informational purposes only. Consult a healthcare provider before following any advice or taking medications suggested'
     
     elif tag == 'doctor':
         question = question.split("Based on the patient's symptoms and provided context, provide a possible diagnosis, recommended treatments, and specialists to consult.")[0] + """
