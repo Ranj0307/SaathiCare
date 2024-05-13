@@ -48,7 +48,7 @@ const OptimizeLabReport = () => {
         }
         const result = await response.json();
         setChatMessages((prevMessages) => [...prevMessages, { type: 'bot', 
-                                                             content: result.response + '\n\nDisclaimer Verbaige: This system-generated summary is prone to errors and is for informational purposes only. Consult a healthcare provider before following any advice or taking medications suggested', 
+                                                             content: result.response + '\n\nDisclaimer: This system-generated summary is prone to errors and is for informational purposes only. Consult a healthcare provider before following any advice or taking medications suggested', 
                                                              contentType: 'text' }]);
 
     } catch (error) {
