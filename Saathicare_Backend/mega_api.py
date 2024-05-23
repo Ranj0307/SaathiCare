@@ -7,10 +7,7 @@ from flask_cors import CORS
 from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage
 
-
-
 import numpy as np
-
 
 import plotly
 import plotly.express as px
@@ -19,11 +16,9 @@ from scipy.stats import norm
 from pandasai import Agent
 from pandasai.llm.openai import OpenAI
 
-
 from google.cloud import aiplatform
 
 import os
-
 
 from neo4j import GraphDatabase
 from transformers import pipeline
@@ -32,24 +27,15 @@ from PyPDF2 import PdfReader
 
 from google.cloud import speech, translate_v2 as translate
 
-
-
 app = Flask(__name__)
 CORS(app)
-
 
 from flask_sslify import SSLify
 sslify = SSLify(app)
 
-
-
-
-
 with open('api_keys.json') as api_file:
     api_keys = json.load(api_file)
     os.environ["MISTRAL_API_KEY"] = api_keys['mistral_api']
-
-
 
 import os
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = 'caresaathi_servicefile.json'
@@ -59,9 +45,8 @@ uri = "neo4j+s://21c7fc89.databases.neo4j.io"
 username = "neo4j"
 password = "Z3_iVqR93fjG55OEjzhx1N_hUaKEAEDJb3c8sU2BQPg"
 
-
 # Hardcoded IDs
-ENDPOINT_ID="6641567002232094720"
+ENDPOINT_ID="4160998401225261056"
 PROJECT_ID="808102083329"
 
 # Set up Google Cloud Speech client
@@ -99,7 +84,7 @@ def load_json_and_convert_to_text(file_path):
         return json_to_text(data)
     except Exception as e:
         return f"An error occurred while processing the file: {e}"
-        
+       
 
 def extract_text_from_file(file_path):
     file_name, file_extension = os.path.splitext(file_path)
@@ -169,10 +154,8 @@ def get_nearest_clinic():
         return jsonify({"nearest_clinic": [nearest_clinic_address]})
     else:
         return jsonify({"error": "No nearest clinic found"}), 404
-    
-
+   
 # api_app.py
-
 
 def predict_vertex_ai(endpoint_id, project_id, instance, context, tag, location="us-central1"):
     if len(context) < 15 and tag == 'report':
@@ -222,8 +205,6 @@ def valid_response(prediction):
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "ok"}), 200
-
-
 
 @app.route('/pdf_summarizer', methods=['POST'])
 def pdf_summarizer():
@@ -307,7 +288,6 @@ def pdf_summarizer():
     # }
     # final_response_1 = predict_vertex_ai(ENDPOINT_ID, PROJECT_ID, instance, final_response, 'report')[0].replace('*', '').split('Summary:')[-1].strip()
     return jsonify({"response": final_response})
-
 
 
 @app.route('/predict', methods=['POST'])
@@ -436,7 +416,6 @@ def interactive_physician_chatbot():
 
     return jsonify({"response": prediction})
 
-
 # app_content.py
 
 # Load the data
@@ -525,7 +504,6 @@ def process_query():
         management_comment = f"An error occurred: {e}"
 
     return jsonify({'response': management_comment})
-
 
 
 # api_neo4j.pi
