@@ -64,20 +64,13 @@ password = "Z3_iVqR93fjG55OEjzhx1N_hUaKEAEDJb3c8sU2BQPg"
 ENDPOINT_ID="6641567002232094720"
 PROJECT_ID="808102083329"
 
-
-
 # Set up Google Cloud Speech client
 client = speech.SpeechClient()
 translate_client = translate.Client()
 
-
-
-
 # Load the clinic data
 labels_path = 'Curebay_clinics.csv'
 df = pd.read_csv(labels_path)
-
-
 
 
 def json_to_text(data, indent=0):
@@ -177,12 +170,6 @@ def get_nearest_clinic():
     else:
         return jsonify({"error": "No nearest clinic found"}), 404
     
-
-
-
-
-
-
 
 # api_app.py
 
@@ -448,12 +435,6 @@ def interactive_physician_chatbot():
 
 
     return jsonify({"response": prediction})
-
-
-
-
-
-
 
 
 # app_content.py
